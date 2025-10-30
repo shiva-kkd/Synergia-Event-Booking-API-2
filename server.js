@@ -4,9 +4,6 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = 3000;
 
-// ========================
-// MONGODB CONNECTION
-// ========================
 mongoose.connect('mongodb+srv://kokkadashivananda8_db_user:Shiva%408055@cluster0.3azaerq.mongodb.net/')
   .then(() => {
     console.log('✅ MongoDB Atlas Connected Successfully');
@@ -15,25 +12,13 @@ mongoose.connect('mongodb+srv://kokkadashivananda8_db_user:Shiva%408055@cluster0
     console.log('❌ MongoDB Connection Failed:', err);
   });
 
-// ========================
-// MIDDLEWARE
-// ========================
 app.use(express.json());
 
-// ========================
-// IMPORT MODEL
-// ========================
 const Booking = require('./models/Booking');
 
-// ========================
-// API ROUTES
-// ========================
-
-// 1. GET ALL BOOKINGS
 app.get('/api/bookings', async (req, res) => {
   try {
     const bookings = await Booking.find().sort({ createdAt: -1 });
-    
     res.json({
       success: true,
       count: bookings.length,
@@ -48,19 +33,15 @@ app.get('/api/bookings', async (req, res) => {
   }
 });
 
-// 2. CREATE NEW BOOKING
 app.post('/api/bookings', async (req, res) => {
   try {
     const { name, email, event, ticketType, phone } = req.body;
-
-    // Validation
     if (!name || !email) {
       return res.status(400).json({
         success: false,
         message: 'Name and email are required fields'
       });
     }
-
     const booking = await Booking.create({
       name,
       email: email.toLowerCase(),
@@ -68,7 +49,6 @@ app.post('/api/bookings', async (req, res) => {
       ticketType: ticketType || 'Standard',
       phone: phone || ''
     });
-
     res.status(201).json({
       success: true,
       message: 'Booking created successfully',
@@ -82,7 +62,6 @@ app.post('/api/bookings', async (req, res) => {
         error: error.message
       });
     }
-    
     res.status(500).json({
       success: false,
       message: 'Error creating booking',
@@ -91,18 +70,15 @@ app.post('/api/bookings', async (req, res) => {
   }
 });
 
-// 3. GET BOOKING BY ID
 app.get('/api/bookings/:id', async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
-
     if (!booking) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
-
     res.json({
       success: true,
       data: booking
@@ -114,7 +90,6 @@ app.get('/api/bookings/:id', async (req, res) => {
         message: 'Invalid booking ID'
       });
     }
-    
     res.status(500).json({
       success: false,
       message: 'Error fetching booking',
@@ -123,7 +98,6 @@ app.get('/api/bookings/:id', async (req, res) => {
   }
 });
 
-// 4. UPDATE BOOKING
 app.put('/api/bookings/:id', async (req, res) => {
   try {
     const booking = await Booking.findByIdAndUpdate(
@@ -131,14 +105,12 @@ app.put('/api/bookings/:id', async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     );
-
     if (!booking) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
-
     res.json({
       success: true,
       message: 'Booking updated successfully',
@@ -151,7 +123,6 @@ app.put('/api/bookings/:id', async (req, res) => {
         message: 'Invalid booking ID'
       });
     }
-    
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
@@ -159,7 +130,6 @@ app.put('/api/bookings/:id', async (req, res) => {
         error: error.message
       });
     }
-    
     res.status(500).json({
       success: false,
       message: 'Error updating booking',
@@ -168,18 +138,15 @@ app.put('/api/bookings/:id', async (req, res) => {
   }
 });
 
-// 5. DELETE BOOKING
 app.delete('/api/bookings/:id', async (req, res) => {
   try {
     const booking = await Booking.findByIdAndDelete(req.params.id);
-
     if (!booking) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
-
     res.json({
       success: true,
       message: 'Booking cancelled successfully',
@@ -192,7 +159,6 @@ app.delete('/api/bookings/:id', async (req, res) => {
         message: 'Invalid booking ID'
       });
     }
-    
     res.status(500).json({
       success: false,
       message: 'Error cancelling booking',
@@ -201,22 +167,18 @@ app.delete('/api/bookings/:id', async (req, res) => {
   }
 });
 
-// 6. SEARCH BY EMAIL
 app.get('/api/bookings/search', async (req, res) => {
   try {
     const { email } = req.query;
-
     if (!email) {
       return res.status(400).json({
         success: false,
         message: 'Email query parameter is required'
       });
     }
-
     const bookings = await Booking.find({ 
       email: new RegExp(email, 'i') 
     }).sort({ createdAt: -1 });
-
     res.json({
       success: true,
       count: bookings.length,
@@ -231,22 +193,18 @@ app.get('/api/bookings/search', async (req, res) => {
   }
 });
 
-// 7. FILTER BY EVENT
 app.get('/api/bookings/filter', async (req, res) => {
   try {
     const { event } = req.query;
-
     if (!event) {
       return res.status(400).json({
         success: false,
         message: 'Event query parameter is required'
       });
     }
-
     const bookings = await Booking.find({ 
       event: new RegExp(event, 'i') 
     }).sort({ createdAt: -1 });
-
     res.json({
       success: true,
       count: bookings.length,
@@ -261,11 +219,6 @@ app.get('/api/bookings/filter', async (req, res) => {
   }
 });
 
-// ========================
-// ADDITIONAL ROUTES
-// ========================
-
-// Health Check
 app.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -275,7 +228,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root Route
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -301,7 +253,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404 Handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -309,9 +260,6 @@ app.use('*', (req, res) => {
   });
 });
 
-// ========================
-// START SERVER
-// ========================
 app.listen(PORT, () => {
   console.log('🚀 Synergia Event Booking API Started');
   console.log(`📍 Port: ${PORT}`);
